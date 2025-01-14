@@ -1,0 +1,56 @@
+/* Import existing modal styles */
+@import './PaperPurchase.css';
+
+/* Additional styles specific to Paper Out component */
+.search-container {
+  padding: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.search-input:focus {
+  border-color: #0073e6;
+  outline: none;
+}
+
+.star {
+  color: #ffd700;
+  font-size: 1.2rem;
+}
+
+.table-row-hover {
+  cursor: pointer;
+}
+
+.table-row-hover:hover {
+  background: #e6f7ff;
+}
+
+/* Sub-modal styles */
+.sub-modal {
+  width: 500px;
+  max-width: 90%;
+}
+
+/* Make sure the overflow is handled properly */
+.table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-container {
+    max-height: 300px;
+  }
+}
