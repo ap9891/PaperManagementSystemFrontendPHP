@@ -21,22 +21,26 @@ const ForgotPassword = () => {
       setError("Please enter a valid email address");
       return;
     }
-
+  
     setError("");
     setLoading(true);
+    console.log('Attempting password reset with URL:', API_ENDPOINTS.FORGOT_PASSWORD);
+    
     try {
-      const response = await axios.post(`${BASE_URL}/forgot-password.php`, {
+      const response = await axios.post(API_ENDPOINTS.FORGOT_PASSWORD, {
         email,
       });
-      setMessage(
-        "If an account exists with this email, a reset link will be sent."
-      );
+      console.log('Password reset response:', response);
+  
+      setMessage("If an account exists with this email, a reset link will be sent.");
       setStep(2);
       setError("");
     } catch (err) {
+      console.error('Password reset error:', err);
+      console.error('Error response:', err.response);
       setError(
         err.response?.data?.error ||
-          "An error occurred while processing your request"
+        "An error occurred while processing your request"
       );
     } finally {
       setLoading(false);
@@ -56,10 +60,15 @@ const ForgotPassword = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await axios.post(`${BASE_URL}/forgot-password.php`, {
+      // const response = await axios.post(`${BASE_URL}/forgot-password.php`, {
+      //   token,
+      //   newPassword,
+      // });
+      const response = await axios.post(API_ENDPOINTS.FORGOT_PASSWORD, {
         token,
         newPassword,
       });
+  
 
       if (response.data.success) {
         setStep(3);

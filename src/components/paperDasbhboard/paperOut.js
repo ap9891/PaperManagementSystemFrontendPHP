@@ -173,10 +173,10 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleReelDoubleClick = (reel) => {
+  const handleReelClick = (reel) => {
+    console.log('Reel clicked:', reel);
     setSelectedReel(reel);
   };
-
   if (!isOpen) return null;
 
   const renderPagination = (totalPages) => (
@@ -279,6 +279,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                   <tr>
                     <th>Status</th>
                     <th>Paper Name</th>
+                    <th>Reel Number</th>
                     <th>Quantity</th>
                     <th>Mill Name</th>
                     <th>Shade</th>
@@ -290,15 +291,16 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                   {paginatedReels.map((reel) => (
                     <tr
                       key={reel.id}
-                      onDoubleClick={() => handleReelDoubleClick(reel)}
+                      onClick={() => handleReelClick(reel)}
                       className="table-row-hover"
                     >
                       <td>
                         {reel.is_partially_used ? (
-                          <span className="star">★</span>
-                        ) : null}
+                          <span className="star">Used</span>
+                        ) : "Fresh"}
                       </td>
                       <td>{reel.paper_name}</td>
+                      <td>{reel.reel_number}</td>
                       <td>{reel.quantity}</td>
                       <td>{reel.mill_name}</td>
                       <td>{reel.shade}</td>

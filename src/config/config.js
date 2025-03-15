@@ -3,7 +3,7 @@ const getApiBaseUrl = () => {
 
   const API_URLS = {
     development: "http://localhost:9090/api",
-    production: "https://api.example.com/api",
+    production: "https://fantasypackaging.in/api/api",
   };
 
   return API_URLS[env];
@@ -11,6 +11,7 @@ const getApiBaseUrl = () => {
 
 export const API_ENDPOINTS = {
   BASE: getApiBaseUrl(),
+  FORGOT_PASSWORD: `${getApiBaseUrl()}/forgot-password.php`,
   LOGIN: `${getApiBaseUrl()}/login.php`,
   LOGOUT: `${getApiBaseUrl()}/auth/logout`,
   MILL: `${getApiBaseUrl()}/mill.php`,

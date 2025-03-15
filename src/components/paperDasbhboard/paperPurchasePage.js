@@ -3,28 +3,33 @@ import axios from "axios";
 import "./PaperPurchase.css";
 import Alert from "../Alert/Alert";
 import API_ENDPOINTS from "../../config/config";
+import NavigationPaperDashboard from "../navbar/NavbarPaperDashboard";
+import { useNavigate } from "react-router-dom";
+import ComboboxInput from "./comboBoxInput";
 
-const API_BASE_URL = API_ENDPOINTS.BASE;
-
-const PaperPurchaseModal = ({ isOpen, onClose }) => {
+const PaperPurchasePage = () => {
+    const initialFormState = {
+        date: new Date().toISOString().split("T")[0],
+        reelNumber: "",
+        paperName: "",
+        quantity: "",
+        millName: "",
+        shade: "",
+        ratePerKg: "",
+        price: "",
+        remark: "",
+      };
+    
   const [activeTab, setActiveTab] = useState("new");
-  const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
-    reelNumber: "",
-    paperName: "",
-    quantity: "",
-    millName: "",
-    shade: "",
-    ratePerKg: "",
-    price: "",
-    remark: "",
-  });
+  const [formData, setFormData] = useState(initialFormState);
+  
   // State for master data and history
   const [paperMasterData, setPaperMasterData] = useState([]);
   const [millMasterData, setMillMasterData] = useState([]);
   const [shadeMasterData, setShadeMasterData] = useState([]);
   const [history, setHistory] = useState([]);
   const [alert, setAlert] = useState(null);
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(25);
@@ -34,10 +39,88 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
   });
 
   // Calculate pagination indexes
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(history.length / itemsPerPage);
+
+  const navigate = useNavigate();
+
+  const generateReelNumber = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        API_ENDPOINTS.PAPER_PURCHASES.GENERATE_REEL
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error generating reel number:", error);
+      setAlert({
+        type: "error",
+        message: "Failed to generate reel number",
+      });
+      return "";
+    }
+  }, []);
+
+
+  const fetchInitialData = async () => {
+    try {
+      const [paperResponse, millResponse, shadeResponse, purchasesResponse] =
+        await Promise.all([
+          axios.get(`${API_ENDPOINTS.PAPER}/read.php`),
+          axios.get(API_ENDPOINTS.MILL),
+          axios.get(API_ENDPOINTS.SHADE),
+          axios.get(API_ENDPOINTS.PAPER_PURCHASES.READ),
+        ]);
+
+      const paperNames = paperResponse.data.map((paper) => ({
+        value: paper.part_name,
+        label: `${paper.part_name} (${paper.gsm} GSM, ${paper.type})`,
+        ...paper,
+      }));
+
+      const millNames = millResponse.data.map((mill) => ({
+        value: mill.mill_name,
+        label: mill.mill_name,
+        id: mill.mill_id,
+      }));
+
+      const shades = shadeResponse.data.map((shade) => ({
+        value: shade.shadeName,
+        label: shade.shadeName,
+        id: shade.shadeId,
+      }));
+
+      const calculatedTotals = purchasesResponse.data.reduce(
+        (acc, curr) => {
+          return {
+            totalQuantity: acc.totalQuantity + parseFloat(curr.quantity || 0),
+            totalPrice: acc.totalPrice + parseFloat(curr.price || 0),
+          };
+        },
+        { totalQuantity: 0, totalPrice: 0 }
+      );
+
+      setPaperMasterData(paperNames);
+      setMillMasterData(millNames);
+      setShadeMasterData(shades);
+      setHistory(purchasesResponse.data);
+      setTotals(calculatedTotals);
+
+      const reelNumber = await generateReelNumber();
+      setFormData((prev) => ({
+        ...prev,
+        reelNumber: reelNumber,
+        date: new Date().toISOString().split("T")[0],
+      }));
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+      setAlert({
+        type: "error",
+        message: "Failed to load initial data",
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [generateReelNumber, activeTab]);
 
   // Pagination controls
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -52,6 +135,21 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleCancel = async () => {
+    const newReelNumber = await generateReelNumber();
+    setFormData({
+      ...initialFormState,
+      date: new Date().toISOString().split("T")[0],
+      reelNumber: newReelNumber
+    });
+    
+    // Optional: You might want to add a soft notification
+    setAlert({
+      type: "info",
+      message: "Form reset to initial state"
+    });
+  };
+
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
@@ -60,21 +158,20 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
           axios.get(API_ENDPOINTS.MILL),
           axios.get(API_ENDPOINTS.SHADE),
         ]);
-        // Transform paper names data to handle object structure
+        
+        // Transform data (same as modal version)
         const paperNames = paperResponse.data.map((paper) => ({
           value: paper.part_name,
           label: `${paper.part_name} (${paper.gsm} GSM, ${paper.type})`,
           ...paper,
         }));
 
-        // Transform mill names data
         const millNames = millResponse.data.map((mill) => ({
           value: mill.mill_name,
           label: mill.mill_name,
           id: mill.mill_id,
         }));
 
-        // Transform shade data
         const shades = shadeResponse.data.map((shade) => ({
           value: shade.shadeName,
           label: shade.shadeName,
@@ -95,10 +192,8 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
 
     const fetchPurchaseHistory = async () => {
       try {
-        // const response = await axios.get("/api/paper-purchases/read.php");
         const response = await axios.get(API_ENDPOINTS.PAPER_PURCHASES.READ);
-        // const response = await axiosInstance.get(`${API_ENDPOINTS.PAPER}/paper-purchases/read.php`)
-        // Calculate totals from all records
+        
         const calculatedTotals = response.data.reduce(
           (acc, curr) => {
             return {
@@ -119,48 +214,29 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       }
     };
 
-    if (isOpen) {
-      fetchMasterData();
-      fetchPurchaseHistory();
-    }
-  }, [isOpen]);
-
-  // Generate Reel Number
-  const generateReelNumber = useCallback(async () => {
-    try {
-      // const response = await axios.get(
-      //   "/api/paper-purchases/generate-reel-number.php"
-      // );
-      const response = await axios.get(
-        API_ENDPOINTS.PAPER_PURCHASES.GENERATE_REEL
-      );
-      // const response = await axiosInstance.get(`${API_ENDPOINTS.PAPER}/paper-purchases/generate-reel-number.php`);
-      return response.data;
-    } catch (error) {
-      console.error("Error generating reel number:", error);
-      setAlert({
-        type: "error",
-        message: "Failed to generate reel number",
-      });
-      return "";
-    }
+    fetchMasterData();
+    fetchPurchaseHistory();
   }, []);
 
+  // Generate Reel Number
+  // Rest of the methods remain the same as in the modal version
+  // (handleInputChange, validateForm, handleSave, etc.)
+  // Only change: Remove `isOpen` and `onClose` dependencies
   // Update useEffect for reel number generation
   useEffect(() => {
     const fetchReelNumber = async () => {
-      if (isOpen) {
+    //   if (isOpen) {
         const reelNumber = await generateReelNumber();
         setFormData((prev) => ({
           ...prev,
           date: new Date().toISOString().split("T")[0],
           reelNumber: reelNumber,
         }));
-      }
+    //   }
     };
 
     fetchReelNumber();
-  }, [isOpen, generateReelNumber]);
+  }, [ generateReelNumber]);
 
   const calculatePrice = (quantity, rate) => {
     return quantity && rate
@@ -215,29 +291,34 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
 
     return true;
   };
+  useEffect(() => {
+    if (alert) {
+      const timer = setTimeout(() => {
+        setAlert(null);
+      }, 3000); 
+  
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   const handleSave = async (saveAndNext = false) => {
     if (!validateForm()) return;
-
+  
     try {
-      // const response = await axios.post(
-      //   "/api/paper-purchases/create.php",
-      //   formData
-      // );
-      // const response = await axios.post(`${API_ENDPOINTS.PAPER}/paper-purchases/create.php`);
       const response = await axios.post(
         API_ENDPOINTS.PAPER_PURCHASES.CREATE,
         formData
       );
       const savedPurchase = response.data;
-
+  
       setHistory((prev) => [savedPurchase, ...prev]);
-
+  
+      // Ensure alert is set
       setAlert({
         type: "success",
-        message: "Paper purchase record saved successfully",
+        message: "Paper purchase record saved successfully"
       });
-
+  
       if (saveAndNext) {
         const newReelNumber = await generateReelNumber();
         setFormData((prev) => ({
@@ -250,15 +331,8 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       } else {
         const newReelNumber = await generateReelNumber();
         setFormData({
-          date: new Date().toISOString().split("T")[0],
+          ...initialFormState,
           reelNumber: newReelNumber,
-          paperName: "",
-          quantity: "",
-          millName: "",
-          shade: "",
-          ratePerKg: "",
-          price: "",
-          remark: "",
         });
       }
     } catch (error) {
@@ -269,49 +343,138 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       });
     }
   };
+  
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "history") {
+      fetchInitialData();
+    }
+  };
 
-  if (!isOpen) return null;
+      // Add new state for sorting
+      const [sortColumn, setSortColumn] = useState(null);
+      const [sortDirection, setSortDirection] = useState('asc');
+      const naturalSortReel = (a, b) => {
+        const extractParts = (reel) => {
+          const match = reel.match(/([a-zA-Z-]+)(\d+)/);
+          return match 
+            ? { prefix: match[1], number: parseInt(match[2], 10) }
+            : { prefix: reel, number: 0 };
+        };
+      
+        const aParts = extractParts(a);
+        const bParts = extractParts(b);
+      
+        // First compare prefixes
+        if (aParts.prefix !== bParts.prefix) {
+          return aParts.prefix.localeCompare(bParts.prefix);
+        }
+      
+        // Then compare numbers
+        return aParts.number - bParts.number;
+      };
+      
+  
+      // Sorting function
+      const processPurchases = () => {
+          let processedHistory = [...history];
+  
+          if (sortColumn) {
+              processedHistory.sort((a, b) => {
+                  let valueA = a[sortColumn];
+                  let valueB = b[sortColumn];
+  
+                  // Handle numeric sorting for quantity, rate_per_kg, price
+                  const numericColumns = ['quantity', 'rate_per_kg', 'price'];
+                  if (numericColumns.includes(sortColumn)) {
+                      valueA = parseFloat(valueA || 0);
+                      valueB = parseFloat(valueB || 0);
+                  } 
+                  // Handle date sorting
+                  else if (sortColumn === 'date') {
+                      valueA = new Date(valueA);
+                      valueB = new Date(valueB);
+                  }
+                  else if(sortColumn === 'reel_number')
+                  {
+                    const sortMultiplier = sortDirection === 'asc' ? 1 : -1;
+                    return sortMultiplier * naturalSortReel(a[sortColumn], b[sortColumn]);
+                  }
+                  // Handle string sorting for other columns
+                  else if (typeof valueA === 'string') {
+                      valueA = (valueA || '').toLowerCase();
+                      valueB = (valueB || '').toLowerCase();
+                  }
+  
+                  if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                  if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                  return 0;
+              });
+          }
+  
+          return processedHistory;
+      };
+      // Sorting handler
+      const handleSort = (column) => {
+        if (sortColumn === column) {
+            // If already sorting this column, toggle direction
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            // If new column, start with ascending
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    // Sorting icon component
+    const SortIcon = ({ column }) => {
+        if (sortColumn !== column) {
+            return <span className="ml-2 text-gray-300">↕️</span>;
+        }
+        return sortDirection === 'asc' ? '⬆️' : '⬇️';
+    };
+    const processedHistory = processPurchases();
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = processedHistory.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(processedHistory.length / itemsPerPage);
+
 
   return (
-    <div className="modal-overlay">
+    <div >
+        <NavigationPaperDashboard/>
       {alert && (
         <Alert
           type={alert.type}
           message={alert.message}
-          onClose={() => setAlert(null)}
+        //   onClose={() => setAlert(null)}
         />
       )}
-      <div className="modal-content">
-        <div>
-          <button
-            className="close-button"
-            aria-label="Close modal"
-            onClick={onClose}
-          >
-            &times;
-          </button>
-        </div>
-        <div className="modal-header">
-          <h2>Paper Purchase</h2>
+      <div className="page-content">
+        <div className="page-header">
+          {/* <h2>Paper Purchase</h2> */}
         </div>
 
         <div className="tabs">
           <button
             className={`tab-button ${activeTab === "new" ? "active" : ""}`}
-            onClick={() => setActiveTab("new")}
+            onClick={() => handleTabChange("new")}
           >
             New
           </button>
           <button
             className={`tab-button ${activeTab === "history" ? "active" : ""}`}
-            onClick={() => setActiveTab("history")}
+            onClick={() => handleTabChange("history")}
           >
             History
           </button>
         </div>
 
+        {/* Render the form and history table as before, 
+            but remove modal-specific styling */}
+        {/* The content will be mostly the same as the modal version */}
         {activeTab === "new" ? (
-          <div className="form-content">
+          <div className="form-content form-content-paperPurchase">
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="date">
@@ -334,7 +497,7 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                   disabled
                 />
               </div>
-
+{/* 
               <div className="form-group">
                 <label htmlFor="paperName">
                   Paper Name<span className="required">*</span>
@@ -353,7 +516,17 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
+              <div className="form-group">
+  <ComboboxInput
+    options={paperMasterData}
+    value={formData.paperName}
+    onChange={(value) => handleInputChange("paperName", value)}
+    placeholder="Select or type paper name"
+    label="Paper Name"
+    required={true}
+  />
+</div>
 
               <div className="form-group">
                 <label htmlFor="quantity">
@@ -371,7 +544,7 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                 />
               </div>
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="millName">
                   Mill Name<span className="required">*</span>
                 </label>
@@ -389,10 +562,20 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Shade Field */}
+              </div> */}
               <div className="form-group">
+  <ComboboxInput
+    options={millMasterData}
+    value={formData.millName}
+    onChange={(value) => handleInputChange("millName", value)}
+    placeholder="Select or type mill name"
+    label="Mill Name"
+    required={true}
+  />
+</div>
+
+
+              {/* <div className="form-group">
                 <label htmlFor="shade">
                   Shade<span className="required">*</span>
                 </label>
@@ -408,7 +591,17 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
+              <div className="form-group">
+  <ComboboxInput
+    options={shadeMasterData}
+    value={formData.shade}
+    onChange={(value) => handleInputChange("shade", value)}
+    placeholder="Select or type shade"
+    label="Shade"
+    required={true}
+  />
+</div>
 
               <div className="form-group">
                 <label htmlFor="ratePerKg">
@@ -442,12 +635,12 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
             </div>
 
             <div className="button-group">
-              <button className="button secondary" onClick={onClose}>
-                Cancel
+              <button className="button secondary" onClick={handleCancel}>
+                Clear
               </button>
               <button
                 className="button secondary"
-                onClick={() => handleSave(false)}
+                onClick={() => handleSave()}
               >
                 Save
               </button>
@@ -461,7 +654,7 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
           </div>
         ) : (
           <div>
-            <div className="table-container">
+            <div className="table-container table-container-paperPurchase">
               <div
                 className="summary-box"
                 style={{
@@ -495,18 +688,34 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
               <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Reel Number</th>
-                    <th>Paper Name</th>
-                    <th>Quantity (kg)</th>
-                    <th>Mill Name</th>
-                    <th>Shade</th>
-                    <th>Rate/kg (₹)</th>
-                    <th>Price (₹)</th>
-                  </tr>
-                </thead>
+              <thead>
+                        <tr>
+                            <th onClick={() => handleSort('date')}>
+                                Date <SortIcon column="date" />
+                            </th>
+                            <th onClick={() => handleSort('reel_number')}>
+                                Reel Number <SortIcon column="reel_number" />
+                            </th>
+                            <th onClick={() => handleSort('paper_name')}>
+                                Paper Name <SortIcon column="paper_name" />
+                            </th>
+                            <th onClick={() => handleSort('quantity')}>
+                                Quantity (kg) <SortIcon column="quantity" />
+                            </th>
+                            <th onClick={() => handleSort('mill_name')}>
+                                Mill Name <SortIcon column="mill_name" />
+                            </th>
+                            <th onClick={() => handleSort('shade')}>
+                                Shade <SortIcon column="shade" />
+                            </th>
+                            <th onClick={() => handleSort('rate_per_kg')}>
+                                Rate/kg (₹) <SortIcon column="rate_per_kg" />
+                            </th>
+                            <th onClick={() => handleSort('price')}>
+                                Price (₹) <SortIcon column="price" />
+                            </th>
+                        </tr>
+                    </thead>
                 <tbody>
                   {currentItems.map((entry) => (
                     <tr key={entry.id}>
@@ -582,4 +791,4 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default PaperPurchaseModal;
+export default PaperPurchasePage;

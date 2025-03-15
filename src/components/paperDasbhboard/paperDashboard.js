@@ -62,23 +62,23 @@ const PaperDashboard = () => {
         <h1 className="main-title">Fantasy Packaging Private Limited</h1>
 
         <div className="buttons-grid">
-          <Link to="/paper-raw" onClick={handlePaperInClick}>
+          <Link to="/paper-purchase" >
             Paper In
           </Link>
 
-          <Link to="/paper-raw" onClick={handlePaperOutClick}>
+          <Link to="/paper-out" >
             Paper Out
           </Link>
 
-          <Link to="/paper-raw" onClick={handleInventoryClick}>
+          <Link to="/inventory" >
             Open Inventory
           </Link>
         </div>
 
-        <PaperOutModal
+        {/* <PaperOutModal
           isOpen={isPaperOutModalOpen}
           onClose={() => setIsPaperOutModalOpen(false)}
-        />
+        /> */}
 
         <PaperPurchaseModal
           isOpen={isPaperModalOpen}

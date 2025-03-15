@@ -13,6 +13,9 @@ import PolytheneRawMaterial from "./components/polythene/PolytheneRawMaterial";
 import DisposablePlates from "./components/DisposablePlates/DisposabePlates";
 import Store from "./components/Store/Store";
 import ResetPassword from "./components/auth/ResetPassword";
+import PaperOutPage from "./components/paperDasbhboard/PaperOutPage";
+import InventoryPage from "./components/paperDasbhboard/InventoryPage";
+import PaperPurchasePage from "./components/paperDasbhboard/paperPurchasePage";
 
 const App = () => {
   return (
@@ -35,6 +38,10 @@ const App = () => {
           <Route path="/disposable-plates" element={<DisposablePlates />} />
           <Route path="/store" element={<Store />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/paper-out" element={<PaperOutPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/paper-purchase" element={<PaperPurchasePage />} />
+
         </Route>
 
         {/* Optional: Add a catch-all 404 route */}

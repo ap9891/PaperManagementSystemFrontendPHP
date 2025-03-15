@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import "./paperMaster.css";
-import NavigationPaper from "../navbar/NavbarPaper";
+// import NavigationPaper from "../navbar/NavbarPaper";
+import NavigationPaperDashboard from "../navbar/NavbarPaperDashboard";
 import Alert from "../Alert/Alert";
 import API_ENDPOINTS from "../../config/config";
 
@@ -227,7 +228,7 @@ const PaperMasterForm = ({
             onClick={handleCancel}
             className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 button-cancel"
           >
-            Cancel
+            Clear
           </button>
           <button
             onClick={handleSave}
@@ -326,38 +327,117 @@ const SearchAndFilters = ({ onSearch, onFilter }) => {
 
 const PaperMasterTable = ({ data, onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
   const itemsPerPage = 15;
 
-  // Calculate pagination values
+  // Sorting and filtering function
+  const processPapers = () => {
+    let processedData = [...data];
+
+    // Sort if a column is selected
+    if (sortColumn) {
+      processedData.sort((a, b) => {
+        let valueA = a[sortColumn];
+        let valueB = b[sortColumn];
+
+        // Handle string comparison for part_name
+        if (sortColumn === 'part_name') {
+          valueA = valueA.toLowerCase();
+          valueB = valueB.toLowerCase();
+        }
+
+        // Handle numeric comparison for other columns
+        if (typeof valueA === 'number' || !isNaN(Number(valueA))) {
+          valueA = Number(valueA);
+          valueB = Number(valueB);
+        }
+
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return processedData;
+  };
+
+  // Sorting handler
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      // If already sorting this column, toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // If new column, start with ascending
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sorting icon component
+  const SortIcon = ({ column }) => {
+    if (sortColumn !== column) {
+      return (
+        <span className="ml-2 text-gray-300">
+          ↕️
+        </span>
+      );
+    }
+    return sortDirection === 'asc' ? '⬆️' : '⬇️';
+  };
+
+  // Apply sorting and pagination
+  const filteredPapers = processPapers();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const currentItems = filteredPapers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPapers.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden table-paper">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden table-paper table-container-width">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                onClick={() => handleSort('part_name')}
+              >
                 Paper Name
+                <SortIcon column="part_name" />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                onClick={() => handleSort('reel_size')}
+              >
                 Reel Size
+                <SortIcon column="reel_size" />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                onClick={() => handleSort('gsm')}
+              >
                 GSM
+                <SortIcon column="gsm" />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                onClick={() => handleSort('bf')}
+              >
                 BF
+                <SortIcon column="bf" />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                onClick={() => handleSort('part_number')}
+              >
                 Part Number
+                <SortIcon column="part_number" />
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -405,11 +485,7 @@ const PaperMasterTable = ({ data, onEdit, onDelete }) => {
         className="flex items-center justify-between px-6 py-3 bg-gray-50"
         style={{ height: "30px" }}
       >
-        <div className="flex items-center">
-          {/* <span className="text-sm text-gray-700">
-      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, data.length)} of {data.length} entries
-    </span> */}
-        </div>
+        <div className="flex items-center"></div>
         <div
           className="flex items-center space-x-4"
           style={{ marginLeft: "13rem" }}
@@ -551,41 +627,77 @@ const PaperMasterFind = () => {
 
   const handleSearch = async (term) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/search.php`, {
-        params: {
-          searchTerm: term,
-          reelSize: filters.reelSize || null,
-          gsm: filters.gsm || null,
-          bf: filters.bf || null,
-        },
-      });
+      // Filter locally for partial matches
+      let filtered = paperMasters;
+      
+      if (term) {
+        filtered = filtered.filter(paper => 
+          paper.part_name?.toLowerCase().includes(term.toLowerCase())
+        );
+      }
+      
+      // Apply numeric filters with partial matching
+      if (filters.reelSize) {
+        filtered = filtered.filter(paper => 
+          paper.reel_size?.toString().includes(filters.reelSize)
+        );
+      }
+      
+      if (filters.gsm) {
+        filtered = filtered.filter(paper => 
+          paper.gsm?.toString().includes(filters.gsm)
+        );
+      }
+      
+      if (filters.bf) {
+        filtered = filtered.filter(paper => 
+          paper.bf?.toString().includes(filters.bf)
+        );
+      }
+
       setSearchTerm(term);
-      setFilteredData(response.data); // This should now work correctly
+      setFilteredData(filtered);
     } catch (error) {
       showAlert(`Error searching Paper Masters: ${error.message}`, "error");
     }
   };
+
   const handleFilter = async (newFilters) => {
     setFilters(newFilters);
-
     try {
-      const response = await axios.get(`${API_BASE_URL}/search.php`, {
-        params: {
-          searchTerm: searchTerm || null,
-          reelSize: newFilters.reelSize || null,
-          gsm: newFilters.gsm || null,
-          bf: newFilters.bf || null,
-        },
-      });
+      // Filter locally for partial matches
+      let filtered = paperMasters;
+      
+      if (searchTerm) {
+        filtered = filtered.filter(paper =>
+          paper.part_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
 
-      setFilteredData(response.data);
-      // if (response.data.length === 0) {
-      //   showAlert("No results found matching the filter", "warning");
-      // }
+      if (newFilters.reelSize) {
+        filtered = filtered.filter(paper =>
+          paper.reel_size?.toString().includes(newFilters.reelSize)
+        );
+      }
+
+      if (newFilters.gsm) {
+        filtered = filtered.filter(paper =>
+          paper.gsm?.toString().includes(newFilters.gsm)
+        );
+      }
+
+      if (newFilters.bf) {
+        filtered = filtered.filter(paper =>
+          paper.bf?.toString().includes(newFilters.bf)
+        );
+      }
+
+      setFilteredData(filtered);
     } catch (error) {
       showAlert(`Error filtering Paper Masters: ${error.message}`, "error");
     }
   };
+
 
   const handleEdit = (paper) => {
     setEditingPaper(paper);
@@ -607,26 +719,31 @@ const PaperMasterFind = () => {
         />
       )}
 
-      <NavigationPaper />
-      <div className="p-4 pt-20 min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <PaperMasterForm
-            onSave={handleSave}
-            lastPartNumber={paperMasters.length}
-            initialData={editingPaper}
-            isEditing={!!editingPaper}
-            onUpdate={handleUpdate}
-            onCancel={handleCancel}
-            showAlert={showAlert}
-          />
+      <NavigationPaperDashboard />
+      <div className="paper-master-container">
+        <div className="paper-master-layout">
+          <div className="form-section">
+            <PaperMasterForm
+              onSave={handleSave}
+              lastPartNumber={paperMasters.length}
+              initialData={editingPaper}
+              isEditing={!!editingPaper}
+              onUpdate={handleUpdate}
+              onCancel={handleCancel}
+              showAlert={showAlert}
+            />
+          </div>
 
-          <SearchAndFilters onSearch={handleSearch} onFilter={handleFilter} />
-
-          <PaperMasterTable
-            data={filteredData}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <div className="table-section">
+            <SearchAndFilters onSearch={handleSearch} onFilter={handleFilter} />
+            <div className="table-container">
+              <PaperMasterTable
+                data={filteredData}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </>

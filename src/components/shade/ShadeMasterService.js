@@ -7,7 +7,14 @@ export const ShadeMasterService = {
   getAllShades: async () => {
     try {
       const response = await axios.get(API_BASE_URL);
-      return response.data;
+      // Ensure we return an array
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else if (response.data && typeof response.data === 'object') {
+        return Object.values(response.data);
+      }
+      console.error('Unexpected API response format:', response.data);
+      return [];
     } catch (error) {
       console.error("Error fetching shades:", error);
       throw error;
@@ -16,7 +23,9 @@ export const ShadeMasterService = {
 
   createShade: async (shadeData) => {
     try {
-      const response = await axios.post(API_BASE_URL, shadeData);
+      // Make sure the URL ends with a trailing slash
+      const url = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
+      const response = await axios.post(url, shadeData);
       return response.data;
     } catch (error) {
       console.error("Error creating shade:", error);

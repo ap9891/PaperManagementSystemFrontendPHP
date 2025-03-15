@@ -1,274 +1,413 @@
 .card-header-paper {
-    background: #000;
-    color: white;
-    padding: 15px;
-    border-radius: 8px 8px 0 0;
-    width: 109.5%;
-    margin-left: -30px;
-  }
+  background: #000;
+  color: white;
+  padding: 15px;
+  border-radius: 8px 8px 0 0;
+  width: 109.5%;
+  margin-left: -30px;
+}
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .modal-container {
-    background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    width: 500px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  .modal-header {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 16px;
-  }
-  
-  .input-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  
-  .input-group label {
-    width: 100px;
-    font-weight: bold;
-  }
-  
-  .input-group input {
-    border: 1px solid #ddd;
-    padding: 8px;
-    border-radius: 4px;
-    flex: 1;
-  }
-  
-  .error-text {
-    color: red;
-    font-size: 0.875rem;
-  }
-  
-  .button-group {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
-  .btn-update {
-    background: #1a73e8;
-    color: white;
-  }
-  
-  .btn-delete {
-    background: #dc3545;
-    color: white;
-  }
-  
-  .button {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .button-cancel {
-    background: #f3f3f3;
-    color: #333;
-    margin-right: 8px;
-  }
-  
-  .button-save {
-    background: #007bff;
-    color: #fff;
-  }
-  
-  .button-save:hover {
-    background: #0056b3;
-  }
-  
-  .new-paper-master-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .new-paper-master-btn:hover {
-    background-color: #0056b3;
-  }  
+.modal-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  width: 500px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-  .paper-box {
-    width: 700px;
-    margin-top: 161px;
-    height: 438px;
+.modal-header {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.input-group label {
+  width: 100px;
+  font-weight: bold;
+}
+
+.input-group input {
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.875rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn-update {
+  background: #1a73e8;
+  color: white;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button-cancel {
+  background: #f3f3f3;
+  color: #333;
+  margin-right: 8px;
+}
+
+.button-save {
+  background: #007bff;
+  color: #fff;
+}
+
+.button-save:hover {
+  background: #0056b3;
+}
+
+.new-paper-master-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.new-paper-master-btn:hover {
+  background-color: #0056b3;
+}  
+
+.paper-box {
+  width: 700px;
+  margin-top: 161px;
+  height: 438px;
 }
 
 .shade-form-card {
-    background: white;
-    /* border-radius: 8px; */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    /* margin-bottom: 20px; */
-  }
+  background: white;
+  /* border-radius: 8px; */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* margin-bottom: 20px; */
+}
 
 .input-text-paper {
-    width: 40%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
+  width: 40%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
 
 }
 
 .input-fiel-name-paper1{
-    margin-right: 1rem;
+  margin-right: 1rem;
 }
 
 .input-fiel-name-paper2{
-    margin-right: 3rem;
+  margin-right: 3rem;
 }
 
 .input-fiel-name-paper3{
-    margin-right: 4rem;
+  margin-right: 4rem;
 }
 
 .input-fiel-name-paper4{
-    margin-right: 1.5rem;
+  margin-right: 1.5rem;
 }
 
 .input-fiel-name-paper5{
-    margin-right: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 .heading-paper-master {
-    text-align: center;
-    color: white;
-    background-color: black;
-    height: 50px;
-    margin-top: -32px;
-    padding: 10px;
-    margin-bottom: 25px;
-    padding: 15px;
-    border-radius: 8px 8px 0 0;
+  text-align: center;
+  color: white;
+  background-color: black;
+  height: 50px;
+  margin-top: -32px;
+  padding: 10px;
+  margin-bottom: 25px;
+  padding: 15px;
+  border-radius: 8px 8px 0 0;
 }
 
 .button-paper{
-    margin-top: 45px
+  margin-top: 45px
 }
 
 .button-save{
-    margin-right: 135px;
-    background: #007bff;
+  margin-right: 135px;
+  background: #007bff;
 }
 
 .button-cancel{
-    margin-left: 135px;
+  margin-left: 135px;
 }
 
 input[type="text"], input[type="password"] {
-    width: 75%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
+  width: 75%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
 /* Table styling */
 .table-paper {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 th, td {
-    text-align: left;
-    padding: 12px;
-  }
-  
-  th {
-    background-color: #f7fafc;
-    font-weight: bold;
-    font-size: 14px;
-    color: #4a5568;
-  }
-  
-  tbody tr:hover {
-    background-color: #f1f5f9;
-  }
-  
-  tbody td {
-    border-top: 1px solid #e2e8f0;
-  }
-  
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
+  text-align: left;
+  padding: 12px;
+}
 
-  /* Search and filter styling */
+th {
+  background-color: #f7fafc;
+  font-weight: bold;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+tbody td {
+  border-top: 1px solid #e2e8f0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Search and filter styling */
 .search-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    margin-left: 12px;
-  }
-  
-  .search-container input {
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    padding: 8px;
-    width: 100%;
-  }
-  
-  .search-container input:focus {
-    border-color: #3182ce;
-  }
-  
-  .filter-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: 30px;
-    margin-bottom: 30px;
-  }
-  
-  .filter-container label {
-    font-size: 14px;
-    color: #4a5568;
-  }
-  
-  .filter-container input {
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    padding: 8px;
-    width: 80px;
-  }
-  
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  margin-left: 12px;
+}
 
-  .filter-search-container{
-    margin-top: 22px;
-    padding-top: 29px;
+.search-container input {
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 8px;
+  width: 100%;
+}
+
+.search-container input:focus {
+  border-color: #3182ce;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 30px;
+  margin-bottom: 30px;
+}
+
+.filter-container label {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.filter-container input {
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 8px;
+  width: 80px;
+}
+
+
+.filter-search-container{
+  margin-top: 22px;
+  padding-top: 29px;
 }
 
 .reset{
-    margin-bottom: 37px;
-    margin-top: 10px;
-    margin-left: 2px;
-    font-size: 12px;
-    width: 92%;
+  margin-bottom: 37px;
+  margin-top: 10px;
+  margin-left: 2px;
+  font-size: 12px;
+  width: 92%;
 }
-  
+
+/* Add these new styles to your paperMaster.css file */
+
+
+.paper-master-container {
+padding: 20px;
+padding-top: 80px;
+min-height: 100vh;
+background-color: #f5f5f5;
+height: 100vh;
+overflow: hidden;
+}
+
+.paper-master-layout {
+display: flex;
+gap: 20px;
+max-width: 1800px;
+margin: 0 auto;
+height: calc(100vh - 100px); /* Account for padding and navbar */
+}
+
+.form-section {
+flex: 0 0 500px;
+position: sticky;
+top: 100px;
+height: fit-content;
+}
+
+.table-section {
+flex: 1;
+display: flex;
+flex-direction: column;
+gap: 20px;
+height: 100%;
+overflow: hidden;
+}
+
+.filter-search-container {
+margin-top: 0;
+background: white;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+flex-shrink: 0; /* Prevent filter container from shrinking */
+}
+
+.table-container {
+background: white;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+flex: 1; /* Take remaining space */
+min-height: 0; /* Allow container to scroll */
+display: flex;
+flex-direction: column;
+overflow: hidden;
+}
+
+.table-paper {
+flex: 1;
+overflow: auto;
+margin: 0;
+box-shadow: none;
+max-height: 100%;
+}
+
+/* Table header styles */
+.table-paper thead th {
+position: sticky;
+top: 0;
+background: white;
+z-index: 1;
+border-bottom: 2px solid #e2e8f0;
+}
+
+/* Update pagination styles */
+.table-paper .pagination-controls {
+position: sticky;
+bottom: 0;
+background: white;
+border-top: 1px solid #e2e8f0;
+padding: 10px 0;
+margin-top: auto;
+}
+
+/* Paper box styles */
+.paper-box {
+width: 100%;
+margin-top: 0;
+height: auto;
+background: white;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header-paper {
+width: 100%;
+margin-left: 0;
+margin-top: 0;
+}
+
+/* Responsive layout */
+@media screen and (max-width: 1200px) {
+.paper-master-layout {
+  flex-direction: column;
+  height: auto;
+  gap: 30px;
+}
+
+.form-section {
+  position: static;
+  width: 100%;
+}
+
+.table-section {
+  height: 80vh; /* Take 80% of viewport height on smaller screens */
+}
+
+.table-container {
+  min-height: 700px !important; /* Minimum height for smaller screens */
+}
+}
+
+/* Extra small screens */
+@media screen and (max-width: 768px) {
+.table-section {
+  height: 70vh;
+}
+
+.form-section {
+  flex: none;
+  width: 100%;
+}
+}
+.table-container-hieght {
+max-height: 700px;
+}
+
+.table-container-width{
+  width: 50em;
+}
+

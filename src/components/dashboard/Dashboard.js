@@ -17,9 +17,25 @@ const Dashboard = () => {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showUserInfo, setShowUserInfo] = useState(false);
+  const userInfo = JSON.parse(localStorage.getItem("user"));
+  
 
   const BASE = API_ENDPOINTS.BASE;
 
+  // Add this useEffect to handle clicking outside to close popup
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".user-profile-icon")) {
+        setShowUserInfo(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   useEffect(() => {
     // Check for token and admin status
     const token = localStorage.getItem("token");
@@ -146,7 +162,7 @@ const Dashboard = () => {
               <Link
                 to="/logout"
                 className="logout-dashboard ml-4"
-                style={{ marginLeft: "100rem" }}
+                style={{ marginLeft: "95em" }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -165,7 +181,48 @@ const Dashboard = () => {
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
               </Link>
+
+              <div
+                style={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  className="user-profile-icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowUserInfo(!showUserInfo);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+
+                  {showUserInfo && (
+                    <div className="user-info-popup">
+                      <div className="email">{userInfo?.email || "User"}</div>
+                      <div className="role">
+                        {userInfo?.isAdmin ? "Administrator" : "Standard User"}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+            {/* </div> */}
           </div>
         </div>
       </nav>

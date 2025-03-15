@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import NavigationPaper from "../navbar/NavbarPaper";
+import React, { useState, useEffect, useMemo } from "react";
+// import NavigationPaper from "../navbar/NavbarPaper";
+import NavigationPaperDashboard from "../navbar/NavbarPaperDashboard";
 import axios from "axios";
 import "./millMaster.css";
 import Alert from "../Alert/Alert";
@@ -116,57 +117,46 @@ const MillMasterForm = ({ onSave, editingMill, setAlert }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box-mill shade-form-card">
-      <h2 className="text-2xl font-bold text-gray-800 heading-paper-master-mill card-header-mill">
+    <div className="form-container form-height">
+      <div className="form-header">
         {editingMill ? "Update Mill" : "Add Mill Master"}
-      </h2>
-
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-mill">
-            Mill Name
-          </label>
+      </div>
+      <div className="form-content">
+        <div className="form-group">
+          <label>Mill Name</label>
           <input
             type="text"
             name="mill_name"
             value={formData.mill_name}
             onChange={handleInputChange}
-            className={`border rounded px-3 py-2 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-              errors.mill_name ? "border-red-500" : ""
-            }`}
+            className="form-input"
             placeholder="Enter mill name"
           />
         </div>
         {errors.mill_name && (
-          <div className="text-red-500 text-sm ml-34">{errors.mill_name}</div>
+          <div className="error-text">{errors.mill_name}</div>
         )}
 
-        <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper2">
-            Mill ID
-          </label>
+        <div className="form-group">
+          <label>Mill ID</label>
           <input
             type="text"
             value={formData.mill_id}
             disabled
-            className="border rounded px-3 py-2 w-32 bg-gray-100 text-gray-600"
+            className="form-input disabled"
           />
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 button-cancel-mill"
-            disabled={isLoading}
-          >
-            Cancel
+        <div className="button-container">
+          <button onClick={handleCancel} className="btn-cancel">
+            Clear
           </button>
           <button
             onClick={handleSave}
             disabled={Object.keys(errors).length > 0 || isLoading}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 button-save-mill"
+            className="btn-save"
           >
-            {isLoading ? "Saving..." : editingMill ? "Update" : "Save"}
+            {isLoading ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -174,51 +164,132 @@ const MillMasterForm = ({ onSave, editingMill, setAlert }) => {
   );
 };
 
+
 const MillList = ({ mills, onUpdate, onDelete }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchId, setSearchId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
   const itemsPerPage = 15;
 
-  // Filter mills based on search
-  const filteredMills = mills.filter((mill) =>
-    mill.mill_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Sorting and filtering function
+  const processMills = () => {
+    // Filter by both name and ID
+    let processedMills = mills.filter((mill) =>
+      mill.mill_name.toLowerCase().includes(searchName.toLowerCase()) &&
+      mill.mill_id.toLowerCase().includes(searchId.toLowerCase())
+    );
 
-  // Calculate pagination values
+    // Then sort if a column is selected
+    if (sortColumn) {
+      processedMills.sort((a, b) => {
+        let valueA = a[sortColumn];
+        let valueB = b[sortColumn];
+
+        // Handle string comparison and custom mill_id sorting
+        if (sortColumn === 'mill_id') {
+          const extractNumber = (millId) => {
+            const match = millId.match(/MILL(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+          };
+          valueA = extractNumber(valueA);
+          valueB = extractNumber(valueB);
+        } else if (typeof valueA === 'string') {
+          valueA = valueA.toLowerCase();
+          valueB = valueB.toLowerCase();
+        }
+
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return processedMills;
+  };
+
+  // Apply sorting and pagination
+  const filteredMills = processMills();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredMills.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredMills.length / itemsPerPage);
 
+  // Sorting handler
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      // If already sorting this column, toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // If new column, start with ascending
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
+  // Sorting icon component
+  const SortIcon = ({ column }) => {
+    if (sortColumn !== column) {
+      return (
+        <span className="ml-2 text-gray-300">
+          ↕️
+        </span>
+      );
+    }
+    return sortDirection === 'asc' ? '⬆️' : '⬇️';
+  };
+
   return (
     <div className="mt-8 filter-search-container">
-      <div className="mb-4 flex gap-4 search-container relative">
-        <input
-          type="text"
-          placeholder="Search by Mill Name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded px-3 py-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400 pl-8"
-        />
-        <span className="absolute left-2.5 top-2.5">🔍</span>
+      <div className="mb-4 flex gap-4 search-container">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search by Mill Name"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            className="border rounded px-3 py-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {/* <span className="absolute left-2.5 top-2.5">🔍</span> */}
+        </div>
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search by Mill ID"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            className="border rounded px-3 py-2 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {/* <span className="absolute left-2.5 top-2.5">🔍</span> */}
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow table-paper flex justify-between">
-        <div className="flex-1">
-          <table className="min-w-full table-fixed">
+
+      <div className="table-container">
+        <div className="table-wrapper">
+          <table className="shade-table">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill">
-                  Mill Name
+                <th 
+                  className="px-6 py-3 w-1/2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill cursor-pointer"
+                  onClick={() => handleSort('mill_name')}
+                >
+                  Mill Name 
+                  <SortIcon column="mill_name" />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill">
-                  Mill ID
+                <th 
+                  className="px-6 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill cursor-pointer"
+                  onClick={() => handleSort('mill_id')}
+                >
+                  Mill ID 
+                  <SortIcon column="mill_id" />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill">
+                <th className="px-6 py-3 w-1/4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider th-mill">
                   Actions
                 </th>
               </tr>
@@ -251,7 +322,6 @@ const MillList = ({ mills, onUpdate, onDelete }) => {
             </tbody>
           </table>
 
-          {/* Pagination Controls */}
           <div
             className="flex items-center justify-between px-6 py-3 bg-gray-50"
             style={{ height: "30px" }}
@@ -261,7 +331,6 @@ const MillList = ({ mills, onUpdate, onDelete }) => {
               className="flex items-center space-x-4"
               style={{ marginLeft: "13rem" }}
             >
-              {/* Previous Button */}
               <button
                 style={{ width: "50px", height: "30px" }}
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -271,7 +340,6 @@ const MillList = ({ mills, onUpdate, onDelete }) => {
                 <span className="material-icons">chevron_left</span>
               </button>
 
-              {/* Page Info */}
               <div
                 className="text-sm text-gray-700 text-center"
                 style={{ width: "180px" }}
@@ -280,7 +348,6 @@ const MillList = ({ mills, onUpdate, onDelete }) => {
                 <strong>{totalPages}</strong>
               </div>
 
-              {/* Next Button */}
               <button
                 style={{ width: "50px", height: "30px" }}
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -337,7 +404,7 @@ const MillMasterPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="loading-container">
         Loading...
       </div>
     );
@@ -345,7 +412,7 @@ const MillMasterPage = () => {
 
   return (
     <>
-      <NavigationPaper />
+      <NavigationPaperDashboard />
       {alert && (
         <Alert
           type={alert.type}
@@ -353,17 +420,19 @@ const MillMasterPage = () => {
           onClose={() => setAlert(null)}
         />
       )}
-      <div className="p-4 pt-20 min-h-screen bg-gray-50">
-        <MillMasterForm
-          onSave={fetchMills}
-          editingMill={editingMill}
-          setAlert={setAlert}
-        />
-        <MillList
-          mills={mills}
-          onUpdate={setEditingMill}
-          onDelete={handleDelete}
-        />
+      <div className="shade-master-container">
+        <div className="content-layout">
+          <MillMasterForm
+            onSave={fetchMills}
+            editingMill={editingMill}
+            setAlert={setAlert}
+          />
+          <MillList
+            mills={mills}
+            onUpdate={setEditingMill}
+            onDelete={handleDelete}
+          />
+        </div>
       </div>
     </>
   );
